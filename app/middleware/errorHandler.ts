@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
-import { UniqueConstraintError } from "sequelize";
 
 class AppError extends Error {
   statusCode: number;

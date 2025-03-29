@@ -4,7 +4,11 @@
   "description": "Build a simple RESTful API to create and manage products in a store",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "ts-node app/primary.ts",
+    "dev": "nodemon app/index.ts",
+    "build": "tsc",
+    "serve": "node dist/index.js",
+    "test": "NODE_ENV=test jest"
   },
   "author": "",
   "license": "ISC",
