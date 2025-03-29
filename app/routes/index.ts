@@ -9,9 +9,9 @@ router.get('/', (req, res) => {
   res.send('Server is active and ready to serve!');
 });
 
-router.post('/:item/add', AppController.addItem);
-router.get('/:item/quantity', AppController.getItem);
-router.post('/:item/sell', AppController.sellItem);
+// router.post('/:item/add', AppController.addItem);
+// router.get('/:item/quantity', AppController.getItem);
+// router.post('/:item/sell', AppController.sellItem);
 
 
 router.use((req, res, next) => {
