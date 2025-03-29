@@ -1,5 +1,5 @@
 import express from 'express';
-import AppController from '../controllers';
+import AppController from '../controllers/ProductController';
 import { Router } from 'express';
 import { AppError } from '../middleware/errorHandler';
 
