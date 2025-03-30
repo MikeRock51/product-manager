@@ -1,13 +1,14 @@
 import mongoose from "mongoose";
 import "dotenv/config";
 
-const isTest = process.env.NODE_ENV === "test";
+const environment = process.env.NODE_ENV;
+const isTest = environment === "test";
 const DB_URI = isTest ? process.env.TEST_DB_URI : process.env.DB_URI;
 
 export async function initializeDatabase() {
   try {
     await mongoose.connect(DB_URI as string);
-    console.log(`Connected to database successfully! ✅✅✅`);
+    console.log(`Connected to ${environment} database successfully! ✅✅✅`);
   } catch (err) {
     console.error("❌❌❌ Unable to connect to the database:", err);
     process.exit(1);
