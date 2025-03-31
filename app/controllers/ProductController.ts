@@ -64,6 +64,32 @@ class ProductControllerClass {
       next(error);
     }
   }
+
+  async updateProduct(req: Request, res: Response, next: NextFunction) {
+    try {
+      const productId = req.params.id;
+      const updateData = req.body;
+
+      if (!productId) {
+        throw new AppError("Product ID is required", 400);
+      }
+
+      const filesArray = Array.isArray(req.files)
+        ? req.files
+        : req.files
+        ? Object.values(req.files).flat()
+        : undefined;
+
+      const updatedProduct = await ProductService.updateProduct(productId, updateData, filesArray);
+
+      res.status(200).json({
+        status: "success",
+        data: updatedProduct,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const ProductController = new ProductControllerClass();

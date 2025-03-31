@@ -12,6 +12,7 @@ router.get('/', (req, res) => {
 router.post('/products', upload.array('images', 10), ProductController.createProduct);
 router.get('/products', ProductController.getAllProducts);
 router.get('/products/:id', ProductController.getProductById);
+router.put('/products/:id', upload.array('images', 10), ProductController.updateProduct);
 // router.post('/:item/sell', ProductController.sellItem);
 
 
