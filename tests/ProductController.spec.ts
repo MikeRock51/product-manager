@@ -60,51 +60,6 @@ describe("ProductController", () => {
 
       expect(response.body.status).toBe("error");
     });
-
-    // it("should create a new product with images and return 201 status", async () => {
-    //   const newProductWithImages = {
-    //     name: "Test Product with Images",
-    //     price: 150,
-    //     description: "A test product with images",
-    //     stock: 30,
-    //   };
-
-    //   const mockImages = ["mockImage1.jpg", "mockImage2.jpg"];
-
-    //   jest.mock("multer", () => {
-    //     return {
-    //       storage: jest.fn(() => ({
-    //     _handleFile: jest.fn((req, file, cb) => {
-    //       cb(null, { path: `/mock/path/${file.originalname}`, size: 1234 });
-    //     }),
-    //     _removeFile: jest.fn((req, file, cb) => {
-    //       cb(null);
-    //     }),
-    //       })),
-    //     };
-    //   });
-
-    //   const response = await request(app)
-    //     .post("/products")
-    //     .field("name", newProductWithImages.name)
-    //     .field("price", newProductWithImages.price)
-    //     .field("description", newProductWithImages.description)
-    //     .field("stock", newProductWithImages.stock)
-    //     .attach("images", mockImages[0])
-    //     .attach("images", mockImages[1])
-    //     .expect(201);
-
-    //   expect(response.body.data).toHaveProperty("_id");
-    //   expect(response.body.data.name).toBe(newProductWithImages.name);
-    //   expect(response.body.data.price).toBe(newProductWithImages.price);
-    //   expect(response.body.data.description).toBe(newProductWithImages.description);
-    //   expect(response.body.data.stock).toBe(newProductWithImages.stock);
-    //   expect(response.body.data.images).toHaveLength(2);
-
-    //   const savedProduct = await ProductModel.findById(response.body.data._id);
-    //   expect(savedProduct).not.toBeNull();
-    //   expect(savedProduct?.images).toHaveLength(2);
-    // });
   });
 
   describe("GET /products/:id", () => {
@@ -163,6 +118,44 @@ describe("ProductController", () => {
       expect(response.body.data).toHaveLength(2);
       expect(response.body.data[0]).toHaveProperty("name", "Product 1");
       expect(response.body.data[1]).toHaveProperty("name", "Product 2");
+    });
+  });
+
+  describe("GET /products with pagination", () => {
+    it("should return paginated products with 200 status", async () => {
+      await ProductModel.create([
+        {
+          name: "Product 1",
+          price: 100,
+          description: "Description for product 1",
+          stock: 10,
+        },
+        {
+          name: "Product 2",
+          price: 200,
+          description: "Description for product 2",
+          stock: 20,
+        },
+        {
+          name: "Product 3",
+          price: 300,
+          description: "Description for product 3",
+          stock: 30,
+        },
+      ]);
+
+      let response = await request(app)
+        .get("/products?page=1&limit=2")
+        .expect(200);
+
+      expect(response.body.data).toHaveLength(2);
+
+      response = await request(app)
+      .get("/products?page=2&limit=2")
+      .expect(200);
+
+      expect(response.body.data).toHaveLength(1);
+      expect(response.body.data[0]).toHaveProperty("name", "Product 3");
     });
   });
 
