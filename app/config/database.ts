@@ -11,7 +11,6 @@ export async function initializeDatabase() {
     await mongoose.connect(DB_URI as string);
     console.log(`Connected to ${environment} database successfully! ✅✅✅`);
   } catch (err) {
-    console.log(DB_URI, "DB_URI!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     console.error("❌❌❌ Unable to connect to the database:", err);
     process.exit(1);
   }

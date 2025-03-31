@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package*.json ./
 COPY yarn.lock ./
-COPY .env.example ./.env
+COPY .env.example /.env
 
 RUN yarn
 
