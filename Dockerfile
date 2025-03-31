@@ -1,18 +1,15 @@
 FROM node:20-alpine
 
+COPY package.json ./
+COPY yarn.lock ./
+
 WORKDIR /app
 
-COPY package*.json ./
-COPY yarn.lock ./
-COPY .env.example /.env
+COPY .env.example /app/.env
 
-RUN yarn
-
-# Copy application source code
 COPY . .
 
-# Build TypeScript code
-RUN yarn build
+RUN yarn
 
 # Expose port the app runs on
 EXPOSE 3000
