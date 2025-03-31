@@ -165,4 +165,46 @@ describe("ProductController", () => {
       expect(response.body.data[1]).toHaveProperty("name", "Product 2");
     });
   });
+
+  describe("PUT /products/:id", () => {
+    it("should update a product successfully", async () => {
+      const product = await ProductModel.create({
+        name: "Existing Product",
+        price: 200,
+        description: "An existing product description",
+        stock: 20,
+      });
+
+      const updatedProductData = {
+        name: "Updated Product",
+        price: 250,
+      };
+
+      const response = await request(app)
+        .put(`/products/${product._id}`)
+        .send(updatedProductData)
+        .expect(200);
+
+      expect(response.body.data).toHaveProperty("_id", product._id.toString());
+      expect(response.body.data.name).toBe(updatedProductData.name);
+      expect(response.body.data.price).toBe(updatedProductData.price);
+
+      const updatedProduct = await ProductModel.findById(product._id);
+      expect(updatedProduct).not.toBeNull();
+      expect(updatedProduct?.name).toBe(updatedProductData.name);
+      expect(updatedProduct?.price).toBe(updatedProductData.price);
+    });
+
+    it("should return 404 if the product is not found", async () => {
+      const nonExistentId = new mongoose.Types.ObjectId();
+
+      const response = await request(app)
+        .put(`/products/${nonExistentId}`)
+        .send({ name: "Updated Product" })
+        .expect(404);
+
+      expect(response.body.status).toBe("error");
+      expect(response.body.message).toBe("Product not found");
+    });
+  });
 });

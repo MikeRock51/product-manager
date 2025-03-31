@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { ProductModel, CreateProductDTO } from "../models/Product";
 import { uploadFileToS3 } from "../config/upload";
 import { AppError } from "../middleware/errorHandler";
