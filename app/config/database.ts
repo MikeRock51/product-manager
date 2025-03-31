@@ -6,7 +6,6 @@ const isTest = environment === "test";
 const DB_URI = isTest ? process.env.TEST_DB_URI : process.env.DB_URI;
 
 export async function initializeDatabase() {
-  console.log(DB_URI, "DB_URI!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   try {
     await mongoose.connect(DB_URI as string);
     console.log(`Connected to ${environment} database successfully! ✅✅✅`);

@@ -5,8 +5,6 @@ COPY yarn.lock ./
 
 WORKDIR /app
 
-COPY .env.example /app/.env
-
 COPY . .
 
 RUN yarn
