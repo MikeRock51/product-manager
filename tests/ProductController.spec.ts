@@ -2,6 +2,11 @@ import request from "supertest";
 import { createApp } from "../app/createApp";
 import { ProductModel } from "../app/models/Product";
 import { closeDatabase, initializeDatabase } from "../app/config/database";
+import mongoose from "mongoose";
+
+async function dropProducts() {
+  await ProductModel.deleteMany({});
+}
 
 describe("ProductController", () => {
   const app = createApp();
@@ -10,8 +15,12 @@ describe("ProductController", () => {
     await initializeDatabase();
   });
 
+  beforeEach(async () => {
+    await dropProducts();
+  });
+
   afterAll(async () => {
-    await ProductModel.deleteMany({});
+    await dropProducts();
     await closeDatabase();
   });
 
@@ -82,6 +91,65 @@ describe("ProductController", () => {
       const savedProduct = await ProductModel.findById(response.body.data._id);
       expect(savedProduct).not.toBeNull();
       expect(savedProduct?.images).toHaveLength(2);
+    });
+  });
+
+  describe("GET /products/:id", () => {
+    it("should return a product by ID with 200 status", async () => {
+      const product = await ProductModel.create({
+        name: "Existing Product",
+        price: 200,
+        description: "An existing product description",
+        stock: 20,
+      });
+
+      const response = await request(app)
+        .get(`/products/${product._id}`)
+        .expect(200);
+
+      expect(response.body.data).toHaveProperty("_id", product._id.toString());
+      expect(response.body.data.name).toBe(product.name);
+      expect(response.body.data.price).toBe(product.price);
+      expect(response.body.data.description).toBe(product.description);
+      expect(response.body.data.stock).toBe(product.stock);
+    });
+
+    it("should return 404 if product is not found", async () => {
+      const nonExistentId = new mongoose.Types.ObjectId();
+
+      const response = await request(app)
+        .get(`/products/${nonExistentId}`)
+        .expect(404);
+
+      expect(response.body.status).toBe("error");
+      expect(response.body.message).toBe("Product not found");
+    });
+  });
+
+  describe("GET /products", () => {
+    it("should return all products with 200 status", async () => {
+      await ProductModel.create([
+        {
+          name: "Product 1",
+          price: 100,
+          description: "Description for product 1",
+          stock: 10,
+        },
+        {
+          name: "Product 2",
+          price: 200,
+          description: "Description for product 2",
+          stock: 20,
+        },
+      ]);
+
+      const response = await request(app)
+        .get("/products")
+        .expect(200);
+
+      expect(response.body.data).toHaveLength(2);
+      expect(response.body.data[0]).toHaveProperty("name", "Product 1");
+      expect(response.body.data[1]).toHaveProperty("name", "Product 2");
     });
   });
 });
