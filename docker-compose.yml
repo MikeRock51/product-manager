@@ -6,9 +6,9 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=development
-      - DB_URI=mongodb://mongodb:27017/product-manager
-      - TEST_DB_URI=mongodb://mongodb:27017/product-manager-test
+      - NODE_ENV=${NODE_ENV}
+      - DB_URI=${DB_URI}
+      - TEST_DB_URI=${TEST_DB_URI}
     volumes:
       - ./:/app
       - /app/node_modules
