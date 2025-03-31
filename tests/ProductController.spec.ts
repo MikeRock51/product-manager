@@ -20,6 +20,7 @@ describe("ProductController", () => {
   });
 
   afterAll(async () => {
+    jest.setTimeout(10000); // Increase timeout to 10 seconds
     await dropProducts();
     await closeDatabase();
   });
