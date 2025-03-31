@@ -37,7 +37,7 @@ export class ProductServiceClass {
   // Method to get all products
   async getAllProducts() {
     try {
-      return await ProductModel.find().sort({ createdAt: -1 });
+      return await ProductModel.find().sort({ createdAt: -1, name: 1 });
     } catch (error) {
       throw error;
     }
