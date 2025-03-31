@@ -20,7 +20,11 @@ class ProductControllerClass {
         status: "success",
         data: product,
       });
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === "ValidationError") {
+        const message = Object.values(error.errors).map((err: any) => err.message).join(", ");
+        error = new AppError(message, 400);
+      }
       next(error);
     }
   }

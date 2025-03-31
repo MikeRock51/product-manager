@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { ProductModel, CreateProductDTO } from "../models/Product";
 import { uploadFileToS3 } from "../config/upload";
+import { AppError } from "../middleware/errorHandler";
 
 export class ProductServiceClass {
   // Method to create a new product
@@ -14,10 +15,12 @@ export class ProductServiceClass {
       if (productImages) {
         const uploadDir = "products";
 
-        for (const productImage of productImages) {
-          const imageUrl = await uploadFileToS3(productImage, uploadDir);
-          images.push(imageUrl);
-        }
+        await Promise.all(
+          productImages.map(async (productImage) => {
+            const imageUrl = await uploadFileToS3(productImage, uploadDir);
+            images.push(imageUrl);
+          })
+        );
       }
 
       productData.images = images;
@@ -25,7 +28,7 @@ export class ProductServiceClass {
       return await ProductModel.create(productData);
     } catch (error: any) {
       if (error.code === 11000) {
-        throw new Error("Product with the same name already exists. Update product instead.");
+        throw new AppError("Product with the same name already exists. Update product instead.", 400);
       }
       throw error;
     }
