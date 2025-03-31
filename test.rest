@@ -6,6 +6,12 @@ GET {{baseUrl}}
 
 ###
 
+###
+GET {{baseUrl}}/products
+
+
+###
+
 
 ###
 POST {{baseUrl}}/product

@@ -1,4 +1,3 @@
-import express from 'express';
 import { ProductController } from '../controllers/ProductController';
 import { Router } from 'express';
 import { AppError } from '../middleware/errorHandler';
@@ -10,6 +9,7 @@ router.get('/', (req, res) => {
 });
 
 router.post('/product', ProductController.createProduct);
+router.get('/products', ProductController.getAllProducts);
 // router.get('/:item/quantity', ProductController.getItem);
 // router.post('/:item/sell', ProductController.sellItem);
 

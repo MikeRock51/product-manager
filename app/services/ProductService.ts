@@ -13,6 +13,15 @@ export class ProductServiceClass {
       throw error;
     }
   }
+
+  // Method to get all products
+  async getAllProducts() {
+    try {
+      return await ProductModel.find();
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export const ProductService = new ProductServiceClass();
