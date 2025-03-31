@@ -27,10 +27,16 @@ export class ProductServiceClass {
     }
   }
 
-  // Method to get all products
-  async getAllProducts() {
+  // Method to get all products with pagination
+  async getAllProducts(page: number = 1, limit: number = 10) {
     try {
-      return await ProductModel.find().sort({ createdAt: -1, name: 1 });
+      const skip = (page - 1) * limit;
+      const products = await ProductModel.find()
+        .sort({ createdAt: -1, name: 1 })
+        .skip(skip)
+        .limit(limit);
+
+      return products;
     } catch (error) {
       throw error;
     }

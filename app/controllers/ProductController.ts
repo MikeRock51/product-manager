@@ -31,7 +31,11 @@ class ProductControllerClass {
 
   async getAllProducts(req: Request, res: Response, next: NextFunction) {
     try {
-      const products = await ProductService.getAllProducts();
+      const { page = 1, limit = 10 } = req.query;
+      const pageNumber = parseInt(page as string, 10);
+      const limitNumber = parseInt(limit as string, 10);
+
+      const products = await ProductService.getAllProducts(pageNumber, limitNumber);
 
       res.status(200).json({
         status: "success",
