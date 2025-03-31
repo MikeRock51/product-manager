@@ -1,5 +1,5 @@
 import express from 'express';
-import AppController from '../controllers/ProductController';
+import { ProductController } from '../controllers/ProductController';
 import { Router } from 'express';
 import { AppError } from '../middleware/errorHandler';
 
@@ -9,9 +9,9 @@ router.get('/', (req, res) => {
   res.send('Server is active and ready to serve!');
 });
 
-// router.post('/:item/add', AppController.addItem);
-// router.get('/:item/quantity', AppController.getItem);
-// router.post('/:item/sell', AppController.sellItem);
+router.post('/product', ProductController.createProduct);
+// router.get('/:item/quantity', ProductController.getItem);
+// router.post('/:item/sell', ProductController.sellItem);
 
 
 router.use((req, res, next) => {

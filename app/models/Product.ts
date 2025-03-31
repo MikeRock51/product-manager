@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 
-const ProductSchema = new mongoose.Schema({
+export const ProductSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, "A product must have a name"],
@@ -35,5 +35,12 @@ const ProductSchema = new mongoose.Schema({
     default: Date.now(),
   },
 });
+
+export interface CreateProductDTO {
+  name: string;
+  price: number;
+  description: string;
+  images?: string[];
+}
 
 export const ProductModel = mongoose.model("Product", ProductSchema);

@@ -5,3 +5,15 @@ GET {{baseUrl}}
 
 
 ###
+
+
+###
+POST {{baseUrl}}/product
+Content-Type: application/json
+
+{
+  "name": "Test Product",
+  "price": 100,
+  "description": "This is a test product"
+}
+###
