@@ -1,5 +1,5 @@
 import multer from "multer";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import "dotenv/config";
 import path from "path";
 
@@ -45,3 +45,12 @@ const s3 = new S3Client({
 
     return `https://${awsBucketName}.s3.${awsRegion}.amazonaws.com/${uploadDir}/${fileName}`;
   };
+
+  export async function deleteFileFromS3(filePath: string): Promise<void> {
+    const params = {
+      Bucket: awsBucketName!,
+      Key: filePath.replace(`https://${awsBucketName}.s3.${awsRegion}.amazonaws.com/`, ""),
+    };
+
+    await s3.send(new DeleteObjectCommand(params));
+  }

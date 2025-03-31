@@ -13,8 +13,8 @@ router.post('/products', upload.array('images', 10), ProductController.createPro
 router.get('/products', ProductController.getAllProducts);
 router.get('/products/:id', ProductController.getProductById);
 router.put('/products/:id', upload.array('images', 10), ProductController.updateProduct);
+router.delete('/products/:id', ProductController.deleteProduct);
 // router.post('/:item/sell', ProductController.sellItem);
-
 
 router.use((req, res, next) => {
   const error = new AppError('Route not Found', 404);

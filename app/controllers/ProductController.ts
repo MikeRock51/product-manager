@@ -90,6 +90,22 @@ class ProductControllerClass {
       next(error);
     }
   }
+
+  async deleteProduct(req: Request, res: Response, next: NextFunction) {
+    try {
+      const productId = req.params.id;
+
+      if (!productId) {
+        throw new AppError("Product ID is required", 400);
+      }
+
+      await ProductService.deleteProduct(productId);
+
+      res.status(204).json({});
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const ProductController = new ProductControllerClass();

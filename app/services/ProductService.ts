@@ -1,5 +1,5 @@
 import { ProductModel, CreateProductDTO } from "../models/Product";
-import { uploadFileToS3 } from "../config/upload";
+import { deleteFileFromS3, uploadFileToS3 } from "../config/upload";
 import { AppError } from "../middleware/errorHandler";
 
 export class ProductServiceClass {
@@ -76,6 +76,34 @@ export class ProductServiceClass {
     } catch (error) {
       throw error;
     }
+  }
+
+  // Method to delete a product by ID
+  async deleteProduct(productId: string) {
+    try {
+      const product = await ProductModel.findById(productId);
+
+      if (!product) {
+        throw new AppError("Product not found", 404);
+      }
+
+      // Delete product images from S3
+      if (product.images && product.images.length > 0) {
+        await this.deleteImageFromS3(product.images);
+      }
+
+      await ProductModel.findByIdAndDelete(productId);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  private async deleteImageFromS3(images: string[]): Promise<void> {
+    await Promise.all(
+      images.map(async (imageUrl: string) => {
+        await deleteFileFromS3(imageUrl);
+      })
+    );
   }
 
   private async uploadProductImages(
