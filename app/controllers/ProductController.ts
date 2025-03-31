@@ -8,7 +8,13 @@ class ProductControllerClass {
     try {
       const productData: CreateProductDTO = req.body;
 
-      const product = await ProductService.createProduct(productData);
+      const filesArray = Array.isArray(req.files)
+        ? req.files
+        : req.files
+        ? Object.values(req.files).flat()
+        : undefined;
+
+      const product = await ProductService.createProduct(productData, filesArray);
 
       res.status(201).json({
         status: "success",

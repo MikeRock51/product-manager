@@ -33,7 +33,9 @@ export const ProductSchema = new mongoose.Schema({
     default: 1,
   },
 
-  images: {},
+  images: {
+    type: [String],
+  },
 
   createdAt: {
     type: Date,
