@@ -4,7 +4,14 @@ import { ProductModel, CreateProductDTO } from '../models/Product';
 export class ProductServiceClass {
   // Method to create a new product
   async createProduct(productData: CreateProductDTO) {
-    return ProductModel.create(productData);
+    try {
+      return await ProductModel.create(productData);
+    } catch (error: any) {
+      if (error.code === 11000) { // MongoDB duplicate key error code
+        throw new Error('Product with the same name already exists.');
+      }
+      throw error;
+    }
   }
 }
 

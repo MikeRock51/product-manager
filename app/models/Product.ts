@@ -28,6 +28,11 @@ export const ProductSchema = new mongoose.Schema({
 
   },
 
+  stock: {
+    type: Number,
+    default: 1,
+  },
+
   images: {},
 
   createdAt: {
