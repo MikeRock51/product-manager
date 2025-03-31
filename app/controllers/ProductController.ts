@@ -41,6 +41,29 @@ class ProductControllerClass {
       next(error);
     }
   }
+
+  async getProductById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const productId = req.params.id;
+
+      if (!productId) {
+        throw new AppError("Product ID is required", 400);
+      }
+
+      const product = await ProductService.getProductById(productId);
+
+      if (!product) {
+        throw new AppError("Product not found", 404);
+      }
+
+      res.status(200).json({
+        status: "success",
+        data: product,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const ProductController = new ProductControllerClass();

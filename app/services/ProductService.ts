@@ -42,6 +42,16 @@ export class ProductServiceClass {
       throw error;
     }
   }
+
+  async getProductById(productId: string) {
+    const product = await ProductModel.findById(productId);
+
+    if (!product) {
+      throw new AppError("Product not found", 404);
+    }
+
+    return product;
+  }
 }
 
 export const ProductService = new ProductServiceClass();
