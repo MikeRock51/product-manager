@@ -9,6 +9,8 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DB_URI=${DB_URI:-mongodb://mongodb:27017/product-manager}
       - TEST_DB_URI=${TEST_DB_URI:-mongodb://mongodb:27017/product-manager-test}
+      - JWT_SECRET=${JWT_SECRET:-your_jwt_secret}
+      - JWT_EXPIRATION=${JWT_EXPIRATION:-1d}
     volumes:
       - ./:/app
       - /app/node_modules
