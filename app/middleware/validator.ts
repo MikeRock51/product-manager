@@ -46,7 +46,7 @@ export const productValidationRules = {
 
     body('tags')
       .optional()
-      .isArray().withMessage('Tags must be an array')
+      .isArray().withMessage('Tags must be an array of strings')
       .customSanitizer(value => {
         if (Array.isArray(value)) {
           return value.map(tag => require('validator').escape(String(tag).trim().toLowerCase()));
@@ -94,7 +94,7 @@ export const productValidationRules = {
 
     body('tags')
       .optional()
-      .isArray().withMessage('Tags must be an array')
+      .isArray().withMessage('Tags must be an array of strings')
       .customSanitizer(value => {
         if (Array.isArray(value)) {
           return value.map(tag => require('validator').escape(String(tag).trim().toLowerCase()));
