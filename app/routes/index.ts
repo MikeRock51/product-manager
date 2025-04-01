@@ -30,11 +30,11 @@ router.post(
   AuthController.login
 );
 
-// router.get(
-//   '/auth/profile',
-//   // protect,
-//   AuthController.getProfile
-// );
+router.get(
+  '/auth/me',
+  protect,
+  AuthController.getProfile
+);
 
 // Protected product routes - require authentication
 // Apply validation middleware to all routes

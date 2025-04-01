@@ -46,22 +46,21 @@ class AuthControllerClass {
     }
   }
 
-  // /**
-  //  * Get current user profile
-  //  */
-  // async getProfile(req: Request, res: Response, next: NextFunction) {
-  //   try {
-  //     // The user object is attached by the auth middleware
-  //     const user = req.user;
+  /**
+   * Get current user profile
+   */
+  async getProfile(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = req.user;
 
-  //     res.status(200).json({
-  //       success: true,
-  //       data: user
-  //     });
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // }
+      res.status(200).json({
+        success: true,
+        data: user
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const AuthController = new AuthControllerClass();

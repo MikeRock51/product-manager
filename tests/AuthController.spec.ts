@@ -322,4 +322,89 @@ describe("AuthController", () => {
       expect(decoded.id).toBe(savedUser?._id.toString());
     });
   });
+
+  describe("GET /auth/me", () => {
+    it("should return current user profile when authenticated", async () => {
+      // Create a user first
+      const userData = {
+        email: "profile@example.com",
+        password: "password123",
+        firstName: "Profile",
+        lastName: "Test"
+      };
+
+      // Register the user to get a token
+      const registerResponse = await request(app)
+        .post("/auth/register")
+        .send(userData);
+
+      const token = registerResponse.body.data.token;
+
+      // Get profile with token
+      const response = await request(app)
+        .get("/auth/me")
+        .set("Authorization", `Bearer ${token}`)
+        .expect(200);
+
+      // Check response structure
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toHaveProperty("email", userData.email);
+      expect(response.body.data).toHaveProperty("firstName", userData.firstName);
+      expect(response.body.data).toHaveProperty("lastName", userData.lastName);
+      expect(response.body.data).toHaveProperty("role", "user");
+      expect(response.body.data).toHaveProperty("_id");
+
+      // Password should not be returned
+      expect(response.body.data).not.toHaveProperty("password");
+    });
+
+    it("should return 401 when no token is provided", async () => {
+      const response = await request(app)
+        .get("/auth/me")
+        .expect(401);
+
+      expect(response.body.status).toBe("error");
+      expect(response.body.message).toBe("Unauthorized, missing token");
+    });
+
+    it("should return 401 when invalid token is provided", async () => {
+      const invalidToken = "invalid.token.here";
+
+      const response = await request(app)
+        .get("/auth/me")
+        .set("Authorization", `Bearer ${invalidToken}`)
+        .expect(401);
+
+      expect(response.body.status).toBe("error");
+    });
+
+    it("should return 401 when token is for a deleted user", async () => {
+      // Create a user first
+      const userData = {
+        email: "deleted@example.com",
+        password: "password123",
+        firstName: "Deleted",
+        lastName: "User"
+      };
+
+      // Register the user to get a token
+      const registerResponse = await request(app)
+        .post("/auth/register")
+        .send(userData);
+
+      const token = registerResponse.body.data.token;
+
+      // Delete the user from database
+      await User.deleteOne({ email: userData.email });
+
+      // Try to get profile with token of deleted user
+      const response = await request(app)
+        .get("/auth/me")
+        .set("Authorization", `Bearer ${token}`)
+        .expect(404);
+
+      expect(response.body.status).toBe("error");
+      expect(response.body.message).toBe("Unauthorized, user not found");
+    });
+  });
 });

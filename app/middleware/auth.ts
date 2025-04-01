@@ -1,9 +1,11 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import User, { IUser } from '../models/User';
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import User, { IUser } from "../models/User";
+import { jwtPayload } from "../interfaces/jwtPayload";
+import { AppError } from "./errorHandler";
 
 // Secret key for JWT verification - should be in environment variables in production
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET as string;
 
 // Extend Express Request type to include user
 declare global {
@@ -17,47 +19,43 @@ declare global {
 /**
  * Middleware to protect routes - verifies JWT token and attaches user to request
  */
-export const protect = async (req: Request, res: Response, next: NextFunction) => {
+export const protect = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     let token: string | undefined;
 
     // Get token from Authorization header
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-      token = req.headers.authorization.split(' ')[1];
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
     }
 
     // Check if token exists
     if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'Not authorized, no token provided'
-      });
+      throw new AppError("Unauthorized, missing token", 401);
     }
 
-    try {
-      // Verify token
-      const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+    const decoded = jwt.verify(token, JWT_SECRET) as jwtPayload;
 
-      // Get user from database
-      const user = await User.findById(decoded.id);
+    // Get user from database
+    const user = await User.findById(decoded.id);
 
-      if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: 'Not authorized, user not found'
-        });
-      }
-
-      // Attach user to request
-      req.user = user;
-      next();
-    } catch (error) {
-      return res.status(401).json({
-        success: false,
-        message: 'Not authorized, token invalid'
-      });
+    if (!user) {
+      throw new AppError("Unauthorized, user not found", 404);
     }
+
+    // Attach user to request
+    req.user = user;
+    next();
   } catch (error) {
+    if (!(error instanceof AppError)) {
+      error = new AppError("Unauthorized", 401);
+    }
     next(error);
   }
 };
@@ -69,15 +67,15 @@ export const restrictTo = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({
-        success: false,
-        message: 'Not authorized, please login'
+        status: "error",
+        message: "Not authorized, please login",
       });
     }
 
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
-        success: false,
-        message: 'You do not have permission to perform this action'
+        status: "error",
+        message: "You do not have permission to perform this action",
       });
     }
 
