@@ -670,5 +670,41 @@ describe("ProductController", () => {
 
       expect(response.body.status).toBe("error");
     });
+
+    it("should return 403 if user is not the product vendor", async () => {
+      // Create a different user
+      const anotherUserData = {
+        email: "anotheruser@example.com",
+        password: "password456",
+        firstName: "Another",
+        lastName: "User",
+      };
+      const anotherAuthResponse = await AuthService.register(anotherUserData);
+      const anotherAuthToken = anotherAuthResponse.token;
+      const anotherUser = anotherAuthResponse.user;
+
+      // Create product with the original test user as vendor
+      const product = await ProductModel.create({
+        name: "Product with Different Vendor",
+        price: 200,
+        description: "This product has a specific vendor",
+        stock: 15,
+        vendor: testUser.id, // Original test user is the vendor
+      });
+
+      // Try to delete the product with the other user
+      const response = await request(app)
+        .delete(`/products/${product._id}`)
+        .set("Authorization", `Bearer ${anotherAuthToken}`) // Use the other user's token
+        .expect(403);
+
+      // Verify the error message
+      expect(response.body.status).toBe("error");
+      expect(response.body.message).toBe("You are not authorized to delete this product");
+
+      // Verify the product was not deleted
+      const productStillExists = await ProductModel.findById(product._id);
+      expect(productStillExists).not.toBeNull();
+    });
   });
 });

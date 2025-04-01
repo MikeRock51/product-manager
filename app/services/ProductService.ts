@@ -133,12 +133,16 @@ export class ProductServiceClass {
   }
 
   // Method to delete a product by ID
-  async deleteProduct(productId: string) {
+  async deleteProduct(productId: string, userId: mongoose.Schema.Types.ObjectId) {
     try {
       const product = await ProductModel.findById(productId);
 
       if (!product) {
         throw new AppError("Product not found", 404);
+      }
+
+      if (!product.vendor.equals(userId)) {
+        throw new AppError("You are not authorized to delete this product", 403);
       }
 
       // Delete product images from S3

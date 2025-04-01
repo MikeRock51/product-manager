@@ -99,12 +99,13 @@ class ProductControllerClass {
   async deleteProduct(req: Request, res: Response, next: NextFunction) {
     try {
       const productId = req.params.id;
+      const userId = req.user!._id!;
 
       if (!productId) {
         throw new AppError("Product ID is required", 400);
       }
 
-      await ProductService.deleteProduct(productId);
+      await ProductService.deleteProduct(productId, userId);
 
       res.status(204).json({});
     } catch (error) {
