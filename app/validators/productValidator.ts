@@ -1,6 +1,6 @@
 import { body, param, query, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
-import { AppError } from './errorHandler';
+import { AppError } from '../middleware/errorHandler';
 
 // Middleware to check validation results
 export const validate = (req: Request, res: Response, next: NextFunction) => {
@@ -11,6 +11,9 @@ export const validate = (req: Request, res: Response, next: NextFunction) => {
   }
   next();
 };
+
+// Export the validation middleware with an alternative name for consistency
+export const validationMiddleware = validate;
 
 // Product validation rules
 export const productValidationRules = {

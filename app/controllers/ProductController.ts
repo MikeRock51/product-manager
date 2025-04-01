@@ -31,33 +31,7 @@ class ProductControllerClass {
 
   async getAllProducts(req: Request, res: Response, next: NextFunction) {
     try {
-      const {
-        page = 1,
-        limit = 10,
-        minPrice,
-        maxPrice,
-        minStock,
-        search,
-        category,
-        tags,
-      } = req.query;
-
-      // Parse query parameters
-      const options = {
-        page: parseInt(page as string, 10),
-        limit: parseInt(limit as string, 10),
-        minPrice: parseFloat(minPrice as string) || undefined,
-        maxPrice: parseFloat(maxPrice as string) || undefined,
-        minStock: parseInt(minStock as string, 10) || undefined,
-        search: search?.toString() || undefined,
-        category: category?.toString() || undefined,
-        tags: tags
-          ? (Array.isArray(tags)
-            ? tags.map(tag => tag.toString())
-            : [tags.toString()])
-          : undefined,
-      };
-
+      const options = req.query;
       const products = await ProductService.getAllProducts(options);
 
       res.status(200).json({
