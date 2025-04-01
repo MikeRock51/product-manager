@@ -2,7 +2,8 @@ import jwt from "jsonwebtoken";
 import User, { IUser } from "../models/User";
 import { AppError } from "../middleware/errorHandler";
 import { jwtPayload } from "../interfaces/jwtPayload";
-import 'dotenv/config';
+import "dotenv/config";
+import bcrypt from "bcryptjs";
 
 export interface RegisterUserInput {
   email: string;
@@ -41,12 +42,7 @@ class AuthService {
 
     // Create new user
     const user = await User.create(userData);
-    const payload: jwtPayload = {
-      id: user._id!.toString(),
-      email: user.email,
-      firstName: user.firstName,
-      role: user.role,
-    };
+    const payload = this.generateJwtPayloadPayload(user);
 
     // Generate JWT token
     const token = this.generateToken(payload);
@@ -63,50 +59,66 @@ class AuthService {
     };
   }
 
-  // /**
-  //  * Login a user
-  //  */
-  // async login(credentials: LoginCredentials): Promise<AuthResponse> {
-  //   // Find user by email and include password field explicitly
-  //   const user = await User.findOne({ email: credentials.email }).select('+password');
+  /**
+   * Login a user
+   */
+  async login(credentials: LoginCredentials): Promise<AuthResponse> {
+    // Find user by email and include password field explicitly
+    const user = await User.findOne({ email: credentials.email }).select(
+      "+password"
+    );
 
-  //   // Check if user exists
-  //   if (!user) {
-  //     throw new Error('Invalid email or password');
-  //   }
+    // Check if user exists
+    if (!user) {
+      throw new AppError("Invalid email or password", 401);
+    }
 
-  //   // Check if password is correct
-  //   const isPasswordMatch = await user.comparePassword(credentials.password);
-  //   if (!isPasswordMatch) {
-  //     throw new Error('Invalid email or password');
-  //   }
+    // Check if password is correct
+    const isPasswordMatch = await this.comparePassword(
+      credentials.password,
+      user.password
+    );
 
-  //   // Generate JWT token
-  //   const token = this.generateToken(user);
+    if (!isPasswordMatch) {
+      throw new AppError("Invalid email or password", 401);
+    }
 
-  //   return {
-  //     user: {
-  //       id: user._id!.toString(),
-  //       email: user.email,
-  //       firstName: user.firstName,
-  //       lastName: user.lastName,
-  //       role: user.role,
-  //     },
-  //     token,
-  //   };
-  // }
+    const payload = this.generateJwtPayloadPayload(user);
+    const token = this.generateToken(payload);
+
+    return {
+      user: {
+        id: user._id!.toString(),
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      },
+      token,
+    };
+  }
 
   /**
    * Generate JWT token for authenticated user
    */
   private generateToken(user: jwtPayload): string {
-    return jwt.sign(
-      user,
-      process.env.JWT_SECRET!,
-      {
-        expiresIn: '1d',
-      }
-    );
+    return jwt.sign(user, process.env.JWT_SECRET!, {
+      expiresIn: "1d",
+    });
+  }
+
+  /**
+   * Validate password
+   * @param candidatePassword - Password provided by the user
+   * @param userPassword - Password stored in the database
+   * @returns - True if passwords match, false otherwise
+   * @description - This method uses bcrypt to compare the provided password with the hashed password stored in the database.
+   */
+  private async comparePassword(
+    candidatePassword: string,
+    userPassword: string
+  ): Promise<boolean> {
+    return bcrypt.compare(candidatePassword, userPassword);
   }
 
   // /**
@@ -121,6 +133,14 @@ class AuthService {
   //     return null;
   //   }
   // }
+
+  private generateJwtPayloadPayload(user: IUser): jwtPayload {
+    return {
+      id: user._id!.toString(),
+      email: user.email,
+      role: user.role,
+    };
+  }
 }
 
 export default new AuthService();

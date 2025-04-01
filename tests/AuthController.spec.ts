@@ -179,7 +179,6 @@ describe("AuthController", () => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as jwtPayload;
 
       expect(decoded.email).toBe(newUser.email);
-      expect(decoded.firstName).toBe(newUser.firstName);
       expect(decoded.role).toBe("user");
       expect(decoded).toHaveProperty("id");
 

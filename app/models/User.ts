@@ -1,24 +1,25 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { ObjectId } from 'mongoose';
 
-export interface IUser {
-  _id?: string;
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  role: 'admin' | 'user';
-  createdAt: Number;
-  updatedAt: Number;
-}
 
 export enum UserRole {
   ADMIN = 'admin',
   USER = 'user',
 }
+export interface IUser {
+  _id?: ObjectId;
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+  createdAt: Number;
+  updatedAt: Number;
+}
 
 
-const userSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema<IUser>(
   {
     email: {
       type: String,
@@ -32,7 +33,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Password is required'],
       minlength: [6, 'Password must be at least 6 characters'],
-      select: false, // Don't return password in queries by default
+      select: false,
     },
     firstName: {
       type: String,
@@ -56,7 +57,7 @@ const userSchema = new mongoose.Schema(
 
     updatedAt: {
       type: Number,
-    },
+    }
   },
   {
     timestamps: { currentTime: () => Math.floor(Date.now() / 1000) },
@@ -78,11 +79,6 @@ userSchema.pre('save', async function (next) {
     return next(error);
   }
 });
-
-// Method to compare password
-userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
-  return bcrypt.compare(candidatePassword, this.password);
-};
 
 const User = mongoose.model('User', userSchema);
 

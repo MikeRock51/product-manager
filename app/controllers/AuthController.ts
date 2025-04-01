@@ -25,32 +25,26 @@ class AuthControllerClass {
     }
   }
 
-  // /**
-  //  * Login a user
-  //  */
-  // async login(req: Request, res: Response, next: NextFunction) {
-  //   try {
-  //     const { email, password } = req.body;
+  /**
+   * Login a user
+   */
+  async login(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email, password } = req.body;
 
-  //     const result = await AuthService.login({
-  //       email,
-  //       password
-  //     });
+      const result = await AuthService.login({
+        email,
+        password
+      });
 
-  //     res.status(200).json({
-  //       success: true,
-  //       data: result
-  //     });
-  //   } catch (error: any) {
-  //     if (error.message === 'Invalid email or password') {
-  //       return res.status(401).json({
-  //         success: false,
-  //         message: error.message
-  //       });
-  //     }
-  //     next(error);
-  //   }
-  // }
+      res.status(200).json({
+        success: true,
+        data: result
+      });
+    } catch (error: any) {
+      next(error);
+    }
+  }
 
   // /**
   //  * Get current user profile

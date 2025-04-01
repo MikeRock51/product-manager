@@ -23,12 +23,12 @@ router.post(
   AuthController.register
 );
 
-// router.post(
-//   '/auth/login',
-//   loginValidator,
-//   validationMiddleware,
-//   AuthController.login
-// );
+router.post(
+  '/auth/login',
+  loginValidator,
+  validationMiddleware,
+  AuthController.login
+);
 
 // router.get(
 //   '/auth/profile',
