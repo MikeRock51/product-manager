@@ -6,7 +6,7 @@ import { productValidationRules } from '../validators/productValidator';
 import { AuthController } from '../controllers/AuthController';
 import { registerValidator, loginValidator } from '../validators/authValidator';
 import { protect, restrictTo } from '../middleware/auth';
-import { validationMiddleware } from '../validators/productValidator';
+import { validationMiddleware } from '../validators';
 
 const router = Router();
 
