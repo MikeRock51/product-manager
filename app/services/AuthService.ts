@@ -1,17 +1,17 @@
-import jwt from 'jsonwebtoken';
-import User, { IUser } from '../models/User';
-import { AppError } from '../middleware/errorHandler';
+import jwt from "jsonwebtoken";
+import User, { IUser } from "../models/User";
+import { AppError } from "../middleware/errorHandler";
 
 // Secret key for JWT signing - should be in environment variables in production
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1d';
+const JWT_SECRET: jwt.Secret = process.env.JWT_SECRET || "your-secret-key";
+const JWT_EXPIRES_IN: string | number = process.env.JWT_EXPIRES_IN || "1d";
 
 export interface RegisterUserInput {
   email: string;
   password: string;
   firstName: string;
   lastName: string;
-  role?: 'admin' | 'user';
+  role?: "admin" | "user";
 }
 
 export interface LoginCredentials {
@@ -38,7 +38,7 @@ class AuthService {
     // Check if email already exists
     const existingUser = await User.findOne({ email: userData.email });
     if (existingUser) {
-      throw new AppError('Email already in use', 409);
+      throw new AppError("Email already in use", 409);
     }
 
     // Create new user
@@ -55,7 +55,7 @@ class AuthService {
         lastName: user.lastName,
         role: user.role,
       },
-      token: '',
+      token: "",
     };
   }
 
@@ -92,10 +92,10 @@ class AuthService {
   //   };
   // }
 
-  // /**
-  //  * Generate JWT token for authenticated user
-  //  */
-  // private generateToken(user: IUserDocument): string {
+  /**
+   * Generate JWT token for authenticated user
+   */
+  // private generateToken(user: IUser): string {
   //   return jwt.sign(
   //     {
   //       id: user._id,

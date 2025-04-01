@@ -7,8 +7,8 @@ export const registerValidator = [
     .normalizeEmail(),
 
   body('password')
-    .isLength({ min: 8 })
-    .withMessage('Password must be at least 8 characters long'),
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters long'),
 
   body('firstName')
     .notEmpty()
@@ -19,6 +19,11 @@ export const registerValidator = [
     .notEmpty()
     .withMessage('Last name is required')
     .trim(),
+
+  body('role')
+    .optional()
+    .isIn(['admin', 'user'])
+    .withMessage('Role must be either admin or user'),
 ];
 
 export const loginValidator = [

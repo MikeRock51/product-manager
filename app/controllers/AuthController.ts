@@ -14,7 +14,6 @@ class AuthControllerClass {
         password,
         firstName,
         lastName,
-        role
       });
 
       res.status(201).json({

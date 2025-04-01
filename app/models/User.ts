@@ -8,8 +8,13 @@ export interface IUser {
   firstName: string;
   lastName: string;
   role: 'admin' | 'user';
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Number;
+  updatedAt: Number;
+}
+
+export enum UserRole {
+  ADMIN = 'admin',
+  USER = 'user',
 }
 
 
@@ -41,12 +46,20 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['admin', 'user'],
-      default: 'user',
+      enum: Object.values(UserRole),
+      default: UserRole.USER,
+    },
+
+    createdAt: {
+      type: Number,
+    },
+
+    updatedAt: {
+      type: Number,
     },
   },
   {
-    timestamps: true,
+    timestamps: { currentTime: () => Math.floor(Date.now() / 1000) },
   }
 );
 
