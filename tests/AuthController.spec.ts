@@ -19,7 +19,7 @@ describe("AuthController", () => {
   });
 
   beforeEach(async () => {
-    await dropUsers();
+    // await dropUsers();
   });
 
   afterAll(async () => {
