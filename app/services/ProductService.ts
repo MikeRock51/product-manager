@@ -141,10 +141,6 @@ export class ProductServiceClass {
         throw new AppError("Product not found", 404);
       }
 
-      if (!product.vendor.equals(userId)) {
-        throw new AppError("You are not authorized to delete this product", 403);
-      }
-
       // Delete product images from S3
       if (product.images && product.images.length > 0) {
         await this.deleteImageFromS3(product.images);

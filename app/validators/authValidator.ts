@@ -31,3 +31,11 @@ export const loginValidator = [
     .notEmpty()
     .withMessage('Password is required'),
 ];
+
+export const upgradeToAdminValidator = [
+  body('userId')
+    .notEmpty()
+    .withMessage('User ID is required')
+    .isMongoId()
+    .withMessage('Invalid user ID format'),
+];

@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import User, { IUser } from "../models/User";
+import User, { IUser, UserRole } from "../models/User";
 import { AppError } from "../middleware/errorHandler";
 import { jwtPayload } from "../interfaces/jwtPayload";
 import "dotenv/config";
@@ -96,6 +96,28 @@ class AuthService {
       },
       token,
     };
+  }
+
+  /**
+   * Upgrade a user role to admin
+   * @param userId - ID of the user to upgrade
+   * @returns - Updated user data
+   */
+  async upgradeToAdmin(userId: string): Promise<IUser> {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    if (user.role === UserRole.ADMIN) {
+      throw new AppError("User is already an admin", 400);
+    }
+
+    user.role = UserRole.ADMIN;
+    await user.save();
+
+    return user;
   }
 
   /**

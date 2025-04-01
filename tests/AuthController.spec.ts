@@ -1,6 +1,6 @@
 import request from "supertest";
 import { createApp } from "../app/createApp";
-import User from "../app/models/User";
+import User, { UserRole } from "../app/models/User";
 import { closeDatabase, initializeDatabase } from "../app/config/database";
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
@@ -405,6 +405,156 @@ describe("AuthController", () => {
 
       expect(response.body.status).toBe("error");
       expect(response.body.message).toBe("Unauthorized, user not found");
+    });
+  });
+
+  describe("POST /auth/upgrade", () => {
+    let adminToken: string;
+    let regularUserToken: string;
+    let regularUserId: string;
+    let anotherUserId: string;
+
+    // Set up users before tests
+    beforeAll(async () => {
+      // Create an admin user
+      const adminUser = await User.create({
+        email: "admin.upgrade@example.com",
+        password: "adminpass123",
+        firstName: "Admin",
+        lastName: "User",
+        role: UserRole.ADMIN
+      });
+
+      // Create token for admin
+      const adminPayload: jwtPayload = {
+        id: adminUser._id.toString(),
+        email: adminUser.email,
+        role: adminUser.role
+      };
+      adminToken = jwt.sign(adminPayload, process.env.JWT_SECRET as string, { expiresIn: '1d' });
+
+      // Create a regular user
+      const regularUser = await User.create({
+        email: "regular.upgrade@example.com",
+        password: "regularpass123",
+        firstName: "Regular",
+        lastName: "User",
+        role: UserRole.USER
+      });
+
+      regularUserId = regularUser._id.toString();
+
+      // Create token for regular user
+      const regularPayload: jwtPayload = {
+        id: regularUser._id.toString(),
+        email: regularUser.email,
+        role: regularUser.role
+      };
+      regularUserToken = jwt.sign(regularPayload, process.env.JWT_SECRET as string, { expiresIn: '1d' });
+
+      // Create another regular user for additional tests
+      const anotherUser = await User.create({
+        email: "another.upgrade@example.com",
+        password: "anotherpass123",
+        firstName: "Another",
+        lastName: "User",
+        role: UserRole.USER
+      });
+
+      anotherUserId = anotherUser._id.toString();
+    });
+
+    it("should allow an admin to upgrade a regular user to admin", async () => {
+      const response = await request(app)
+        .post("/auth/upgrade")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send({ userId: regularUserId })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.message).toBe("User role upgraded to admin successfully");
+      expect(response.body.data).toHaveProperty("role", UserRole.ADMIN);
+
+      // Verify in database
+      const updatedUser = await User.findById(regularUserId);
+      expect(updatedUser?.role).toBe(UserRole.ADMIN);
+    });
+
+    it("should return 403 when a non-admin user tries to upgrade another user", async () => {
+      await User.findByIdAndUpdate(regularUserId, { role: UserRole.USER });
+
+      const response = await request(app)
+        .post("/auth/upgrade")
+        .set("Authorization", `Bearer ${regularUserToken}`)
+        .send({ userId: anotherUserId })
+        .expect(403);
+
+      expect(response.body.status).toBe("error");
+      expect(response.body.message).toContain("Unauthorized");
+
+      // Verify user was not upgraded
+      const notUpdatedUser = await User.findById(anotherUserId);
+      expect(notUpdatedUser?.role).toBe(UserRole.USER);
+    });
+
+    it("should return 400 if userId is not provided", async () => {
+      const response = await request(app)
+        .post("/auth/upgrade")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send({})
+        .expect(400);
+
+      expect(response.body.status).toBe("error");
+      expect(response.body.message).toContain("User ID is required");
+    });
+
+    it("should return 400 if userId is invalid format", async () => {
+      const response = await request(app)
+        .post("/auth/upgrade")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send({ userId: "invalid-id-format" })
+        .expect(400);
+
+      expect(response.body.status).toBe("error");
+      expect(response.body.message).toContain("Invalid user ID format");
+    });
+
+    it("should return 404 if user to upgrade does not exist", async () => {
+      const nonExistentId = new mongoose.Types.ObjectId().toString();
+
+      const response = await request(app)
+        .post("/auth/upgrade")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send({ userId: nonExistentId })
+        .expect(404);
+
+      expect(response.body.status).toBe("error");
+      expect(response.body.message).toBe("User not found");
+    });
+
+    it("should return 400 if trying to upgrade a user who is already admin", async () => {
+      // First upgrade the user
+      await User.findByIdAndUpdate(regularUserId, { role: UserRole.ADMIN });
+
+      // Try to upgrade again
+      const response = await request(app)
+        .post("/auth/upgrade")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send({ userId: regularUserId })
+        .expect(400);
+
+      expect(response.body.status).toBe("error");
+      expect(response.body.message).toBe("User is already an admin");
+    });
+
+    it("should return 401 when no token is provided", async () => {
+      const response = await request(app)
+        .post("/auth/upgrade")
+        .send({ userId: regularUserId })
+        .expect(401);
+
+      expect(response.body.status).toBe("error");
+      expect(response.body.message).toBe("Unauthorized, missing token");
     });
   });
 });

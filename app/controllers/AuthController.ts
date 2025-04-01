@@ -61,6 +61,32 @@ class AuthControllerClass {
       next(error);
     }
   }
+
+  /**
+   * Upgrade a user's role to admin
+   * Only accessible by admin users
+   */
+  async upgradeToAdmin(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.body;
+
+      const updatedUser = await AuthService.upgradeToAdmin(userId);
+
+      res.status(200).json({
+        success: true,
+        message: 'User role upgraded to admin successfully',
+        data: {
+          id: updatedUser._id,
+          email: updatedUser.email,
+          firstName: updatedUser.firstName,
+          lastName: updatedUser.lastName,
+          role: updatedUser.role
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const AuthController = new AuthControllerClass();
