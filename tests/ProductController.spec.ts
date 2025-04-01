@@ -278,6 +278,83 @@ describe("ProductController", () => {
     });
   });
 
+  describe("GET /products with search", () => {
+    beforeEach(async () => {
+      // Create test products with different names
+      await ProductModel.create([
+        {
+          name: "iPhone 13 Pro",
+          price: 999,
+          description: "Apple smartphone",
+          stock: 10,
+        },
+        {
+          name: "Samsung Galaxy S21",
+          price: 799,
+          description: "Samsung smartphone",
+          stock: 15,
+        },
+        {
+          name: "Google Pixel 6",
+          price: 699,
+          description: "Google smartphone",
+          stock: 8,
+        },
+        {
+          name: "iPad Pro 12.9",
+          price: 1099,
+          description: "Apple tablet",
+          stock: 5,
+        }
+      ]);
+    });
+
+    it("should search products by name", async () => {
+      const response = await request(app)
+        .get("/products?search=iPhone")
+        .expect(200);
+
+      expect(response.body.data).toHaveLength(1);
+      expect(response.body.data[0].name).toBe("iPhone 13 Pro");
+    });
+
+    it("should return products with partial name match", async () => {
+      const response = await request(app)
+        .get("/products?search=Pro")
+        .expect(200);
+
+      expect(response.body.data).toHaveLength(2);
+      expect(response.body.data.map((p: any) => p.name)).toContain("iPhone 13 Pro");
+      expect(response.body.data.map((p: any) => p.name)).toContain("iPad Pro 12.9");
+    });
+
+    it("should be case-insensitive when searching", async () => {
+      const response = await request(app)
+        .get("/products?search=iphone")
+        .expect(200);
+
+      expect(response.body.data).toHaveLength(1);
+      expect(response.body.data[0].name).toBe("iPhone 13 Pro");
+    });
+
+    it("should combine search with other filters", async () => {
+      const response = await request(app)
+        .get("/products?search=Pro&minPrice=1000")
+        .expect(200);
+
+      expect(response.body.data).toHaveLength(1);
+      expect(response.body.data[0].name).toBe("iPad Pro 12.9");
+    });
+
+    it("should return no products when search has no matches", async () => {
+      const response = await request(app)
+        .get("/products?search=Nonexistent")
+        .expect(200);
+
+      expect(response.body.data).toHaveLength(0);
+    });
+  });
+
   describe("PUT /products/:id", () => {
     it("should update a product successfully", async () => {
       const product = await ProductModel.create({

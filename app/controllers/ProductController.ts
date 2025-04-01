@@ -36,7 +36,8 @@ class ProductControllerClass {
         limit = 10,
         minPrice,
         maxPrice,
-        minStock
+        minStock,
+        search,
       } = req.query;
 
       // Parse query parameters
@@ -45,7 +46,8 @@ class ProductControllerClass {
         limit: parseInt(limit as string, 10),
         minPrice: parseFloat(minPrice as string) || undefined,
         maxPrice: parseFloat(maxPrice as string) || undefined,
-        minStock: parseInt(minStock as string, 10) || undefined
+        minStock: parseInt(minStock as string, 10) || undefined,
+        search: search?.toString() || undefined,
       };
 
       const products = await ProductService.getAllProducts(options);
