@@ -1,6 +1,7 @@
 import { ProductModel, CreateProductDTO } from "../models/Product";
 import { deleteFileFromS3, uploadFileToS3 } from "../config/upload";
 import { AppError } from "../middleware/errorHandler";
+import mongoose from "mongoose";
 
 export interface ProductFilterOptions {
   minPrice?: number;
@@ -16,7 +17,8 @@ export interface ProductFilterOptions {
 export class ProductServiceClass {
   async createProduct(
     productData: CreateProductDTO,
-    productImages?: Express.Multer.File[]
+    userId: mongoose.Schema.Types.ObjectId,
+    productImages?: Express.Multer.File[],
   ) {
     try {
       if (productImages) {
@@ -26,7 +28,7 @@ export class ProductServiceClass {
         productData.images = images;
       }
 
-      return await ProductModel.create(productData);
+      return await ProductModel.create({...productData, vendor: userId });
     } catch (error: any) {
       if (error.code === 11000) {
         throw new AppError(

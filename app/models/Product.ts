@@ -46,6 +46,12 @@ export const ProductSchema = new mongoose.Schema(
       type: [String],
     },
 
+    vendor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "A product must have a vendor"],
+    },
+
     createdAt: {
       type: Number,
     },

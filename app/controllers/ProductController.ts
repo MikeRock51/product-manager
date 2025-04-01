@@ -7,6 +7,10 @@ class ProductControllerClass {
   async createProduct(req: Request, res: Response, next: NextFunction) {
     try {
       const productData: CreateProductDTO = req.body;
+      if (!req.user || !req.user._id) {
+        throw new AppError("User ID is required", 400);
+      }
+      const userId = req.user._id;
 
       const filesArray = Array.isArray(req.files)
         ? req.files
@@ -14,7 +18,7 @@ class ProductControllerClass {
         ? Object.values(req.files).flat()
         : undefined;
 
-      const product = await ProductService.createProduct(productData, filesArray);
+      const product = await ProductService.createProduct(productData, userId, filesArray);
 
       res.status(201).json({
         status: "success",

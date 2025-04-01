@@ -3,16 +3,36 @@ import { createApp } from "../app/createApp";
 import { ProductModel } from "../app/models/Product";
 import { closeDatabase, initializeDatabase } from "../app/config/database";
 import mongoose from "mongoose";
+import User from "../app/models/User";
+import AuthService from "../app/services/AuthService";
 
 async function dropProducts() {
   await ProductModel.deleteMany({});
 }
 
+async function dropUsers() {
+  await User.deleteMany({});
+}
+
 describe("ProductController", () => {
   const app = createApp();
+  let authToken: string;
+  let testUser: any;
 
   beforeAll(async () => {
     await initializeDatabase();
+
+    // Create test user for authentication
+    const userData = {
+      email: "test123@example.com",
+      password: "password123",
+      firstName: "Test",
+      lastName: "User",
+    };
+
+    const authResponse = await AuthService.register(userData);
+    authToken = authResponse.token;
+    testUser = authResponse.user;
   });
 
   beforeEach(async () => {
@@ -21,6 +41,7 @@ describe("ProductController", () => {
 
   afterAll(async () => {
     await dropProducts();
+    await dropUsers();
     await closeDatabase();
   });
 
@@ -33,10 +54,12 @@ describe("ProductController", () => {
         stock: 50,
         category: "Electronics",
         tags: ["gadget", "tech"],
+        vendor: testUser.id,
       };
 
       const response = await request(app)
         .post("/products")
+        .set("Authorization", `Bearer ${authToken}`)
         .send(newProduct)
         .expect(201);
 
@@ -48,12 +71,14 @@ describe("ProductController", () => {
       expect(response.body.data.stock).toBe(newProduct.stock);
       expect(response.body.data.category).toBe(newProduct.category);
       expect(response.body.data.tags).toEqual(newProduct.tags);
+      expect(response.body.data.vendor).toBe(testUser.id);
 
       const savedProduct = await ProductModel.findById(response.body.data._id);
       expect(savedProduct).not.toBeNull();
       expect(savedProduct?.name).toBe(newProduct.name);
       expect(savedProduct?.category).toBe(newProduct.category);
       expect(savedProduct?.tags).toEqual(newProduct.tags);
+      expect(savedProduct?.vendor.toString()).toBe(testUser.id);
     });
 
     it("should return 400 if required fields are missing", async () => {
@@ -63,8 +88,28 @@ describe("ProductController", () => {
 
       const response = await request(app)
         .post("/products")
+        .set("Authorization", `Bearer ${authToken}`)
         .send(incompleteProduct)
         .expect(400);
+
+      expect(response.body.status).toBe("error");
+    });
+
+    it("should return 401 if authentication token is not provided", async () => {
+      const newProduct = {
+        name: "Test Product",
+        price: 100,
+        description: "A test product description",
+        stock: 50,
+        category: "Electronics",
+        tags: ["gadget", "tech"],
+        vendor: testUser.id,
+      };
+
+      const response = await request(app)
+        .post("/products")
+        .send(newProduct)
+        .expect(401);
 
       expect(response.body.status).toBe("error");
     });
@@ -77,6 +122,7 @@ describe("ProductController", () => {
         price: 200,
         description: "An existing product description",
         stock: 20,
+        vendor: testUser.id,
       });
 
       const response = await request(app)
@@ -88,6 +134,7 @@ describe("ProductController", () => {
       expect(response.body.data.price).toBe(product.price);
       expect(response.body.data.description).toBe(product.description);
       expect(response.body.data.stock).toBe(product.stock);
+      expect(response.body.data.vendor).toBe(testUser.id);
     });
 
     it("should return 404 if product is not found", async () => {
@@ -110,12 +157,14 @@ describe("ProductController", () => {
           price: 100,
           description: "Description for product 1",
           stock: 10,
+          vendor: testUser.id,
         },
         {
           name: "Product 2",
           price: 200,
           description: "Description for product 2",
           stock: 20,
+          vendor: testUser.id,
         },
       ]);
 
@@ -126,6 +175,8 @@ describe("ProductController", () => {
       expect(response.body.data).toHaveLength(2);
       expect(response.body.data[0]).toHaveProperty("name", "Product 1");
       expect(response.body.data[1]).toHaveProperty("name", "Product 2");
+      expect(response.body.data[0].vendor).toBe(testUser.id);
+      expect(response.body.data[1].vendor).toBe(testUser.id);
     });
   });
 
@@ -137,18 +188,21 @@ describe("ProductController", () => {
           price: 100,
           description: "Description for product 1",
           stock: 10,
+          vendor: testUser.id,
         },
         {
           name: "Product 2",
           price: 200,
           description: "Description for product 2",
           stock: 20,
+          vendor: testUser.id,
         },
         {
           name: "Product 3",
           price: 300,
           description: "Description for product 3",
           stock: 30,
+          vendor: testUser.id,
         },
       ]);
 
@@ -169,31 +223,34 @@ describe("ProductController", () => {
 
   describe("GET /products with filters", () => {
     beforeEach(async () => {
-      // Create test products with different price points and stock levels
       await ProductModel.create([
         {
           name: "Budget Product",
           price: 25,
           description: "A low-cost product",
           stock: 5,
+          vendor: testUser.id,
         },
         {
           name: "Mid-range Product",
           price: 100,
           description: "A mid-range product",
           stock: 15,
+          vendor: testUser.id,
         },
         {
           name: "Premium Product",
           price: 500,
           description: "A high-end product",
           stock: 3,
+          vendor: testUser.id,
         },
         {
           name: "Luxury Product",
           price: 1000,
           description: "A luxury product",
           stock: 0,
+          vendor: testUser.id,
         },
       ]);
     });
@@ -285,31 +342,34 @@ describe("ProductController", () => {
 
   describe("GET /products with search", () => {
     beforeEach(async () => {
-      // Create test products with different names
       await ProductModel.create([
         {
           name: "iPhone 13 Pro",
           price: 999,
           description: "Apple smartphone",
           stock: 10,
+          vendor: testUser.id,
         },
         {
           name: "Samsung Galaxy S21",
           price: 799,
           description: "Samsung smartphone",
           stock: 15,
+          vendor: testUser.id,
         },
         {
           name: "Google Pixel 6",
           price: 699,
           description: "Google smartphone",
           stock: 8,
+          vendor: testUser.id,
         },
         {
           name: "iPad Pro 12.9",
           price: 1099,
           description: "Apple tablet",
           stock: 5,
+          vendor: testUser.id,
         },
       ]);
     });
@@ -362,7 +422,6 @@ describe("ProductController", () => {
 
   describe("GET /products with category and tags filters", () => {
     beforeEach(async () => {
-      // Create test products with different categories and tags
       await ProductModel.create([
         {
           name: "iPhone 13 Pro",
@@ -371,6 +430,7 @@ describe("ProductController", () => {
           stock: 10,
           category: "smartphones",
           tags: ["apple", "ios", "mobile"],
+          vendor: testUser.id,
         },
         {
           name: "Samsung Galaxy S21",
@@ -379,6 +439,7 @@ describe("ProductController", () => {
           stock: 15,
           category: "smartphones",
           tags: ["samsung", "android", "mobile"],
+          vendor: testUser.id,
         },
         {
           name: "Google Pixel 6",
@@ -387,6 +448,7 @@ describe("ProductController", () => {
           stock: 8,
           category: "smartphones",
           tags: ["google", "android", "mobile"],
+          vendor: testUser.id,
         },
         {
           name: "iPad Pro 12.9",
@@ -395,6 +457,7 @@ describe("ProductController", () => {
           stock: 5,
           category: "tablets",
           tags: ["apple", "ios", "tablet"],
+          vendor: testUser.id,
         },
         {
           name: "MacBook Pro",
@@ -403,6 +466,7 @@ describe("ProductController", () => {
           stock: 7,
           category: "laptops",
           tags: ["apple", "macos", "laptop"],
+          vendor: testUser.id,
         },
       ]);
     });
@@ -471,6 +535,7 @@ describe("ProductController", () => {
         price: 200,
         description: "An existing product description",
         stock: 20,
+        vendor: testUser.id,
       });
 
       const updatedProductData = {
@@ -480,17 +545,20 @@ describe("ProductController", () => {
 
       const response = await request(app)
         .put(`/products/${product._id}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .send(updatedProductData)
         .expect(200);
 
       expect(response.body.data).toHaveProperty("_id", product._id.toString());
       expect(response.body.data.name).toBe(updatedProductData.name);
       expect(response.body.data.price).toBe(updatedProductData.price);
+      expect(response.body.data.vendor).toBe(testUser.id);
 
       const updatedProduct = await ProductModel.findById(product._id);
       expect(updatedProduct).not.toBeNull();
       expect(updatedProduct?.name).toBe(updatedProductData.name);
       expect(updatedProduct?.price).toBe(updatedProductData.price);
+      expect(updatedProduct?.vendor.toString()).toBe(testUser.id);
     });
 
     it("should update a product's category and tags successfully", async () => {
@@ -501,6 +569,7 @@ describe("ProductController", () => {
         stock: 20,
         category: "Miscellaneous",
         tags: ["test"],
+        vendor: testUser.id,
       });
 
       const updatedProductData = {
@@ -510,11 +579,11 @@ describe("ProductController", () => {
 
       const response = await request(app)
         .put(`/products/${product._id}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .send(updatedProductData)
         .expect(200);
 
       updatedProductData.category = updatedProductData.category.toLowerCase();
-
       expect(response.body.data).toHaveProperty("_id", product._id.toString());
       expect(response.body.data.category).toBe(updatedProductData.category);
       expect(response.body.data.tags).toEqual(updatedProductData.tags);
@@ -527,14 +596,79 @@ describe("ProductController", () => {
 
     it("should return 404 if the product is not found", async () => {
       const nonExistentId = new mongoose.Types.ObjectId();
-
       const response = await request(app)
         .put(`/products/${nonExistentId}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .send({ name: "Updated Product" })
         .expect(404);
 
       expect(response.body.status).toBe("error");
       expect(response.body.message).toBe("Product not found");
+    });
+
+    it("should return 401 if authentication token is not provided", async () => {
+      const product = await ProductModel.create({
+        name: "Existing Product",
+        price: 200,
+        description: "An existing product description",
+        stock: 20,
+        vendor: testUser.id,
+      });
+
+      const response = await request(app)
+        .put(`/products/${product._id}`)
+        .send({ name: "Updated Name" })
+        .expect(401);
+
+      expect(response.body.status).toBe("error");
+    });
+  });
+
+  describe("DELETE /products/:id", () => {
+    it("should delete a product successfully", async () => {
+      const product = await ProductModel.create({
+        name: "Product to Delete",
+        price: 150,
+        description: "This product will be deleted",
+        stock: 10,
+        vendor: testUser.id,
+      });
+
+      const response = await request(app)
+        .delete(`/products/${product._id}`)
+        .set("Authorization", `Bearer ${authToken}`)
+        .expect(204);
+
+      const deletedProduct = await ProductModel.findById(product._id);
+      expect(deletedProduct).toBeNull();
+    });
+
+    it("should return 404 if the product to delete is not found", async () => {
+      const nonExistentId = new mongoose.Types.ObjectId();
+
+      const response = await request(app)
+        .delete(`/products/${nonExistentId}`)
+        .set("Authorization", `Bearer ${authToken}`)
+        .expect(404);
+
+      expect(response.body.status).toBe("error");
+      expect(response.body.message).toBe("Product not found");
+    });
+
+    it("should return 401 if authentication token is not provided", async () => {
+      const product = await ProductModel.create({
+        name: "Product to Delete",
+        price: 150,
+        description: "This product will be deleted",
+        stock: 10,
+        vendor: testUser.id,
+      });
+
+      const response = await request(app)
+        .delete(`/products/${product._id}`)
+        .expect(401);
+
+      expect(response.body.status).toBe("error");
     });
   });
 });

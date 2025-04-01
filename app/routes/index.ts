@@ -36,10 +36,8 @@ router.get(
   AuthController.getProfile
 );
 
-// Protected product routes - require authentication
-// Apply validation middleware to all routes
 router.post('/products',
-  // protect,
+  protect,
   upload.array('images', 10),
   productValidationRules.create,
   ProductController.createProduct
@@ -56,14 +54,14 @@ router.get('/products/:id',
 );
 
 router.put('/products/:id',
-  // protect,
+  protect,
   upload.array('images', 10),
   productValidationRules.update,
   ProductController.updateProduct
 );
 
 router.delete('/products/:id',
-  // protect,
+  protect,
   // restrictTo('admin'),
   productValidationRules.delete,
   ProductController.deleteProduct

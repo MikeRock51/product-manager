@@ -30,7 +30,7 @@ describe("AuthController", () => {
   describe("POST /auth/register", () => {
     it("should register a new user and return 201 status", async () => {
       const newUser = {
-        email: "test@example.com",
+        email: "tester@example.com",
         password: "password123",
         firstName: "John",
         lastName: "Doe"
