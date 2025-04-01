@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-
 export const ProductSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -8,10 +7,10 @@ export const ProductSchema = new mongoose.Schema({
     unique: true,
     trim: true,
     maxlength: [
-      40,
-      "A product name must have less or equal than 40 characters",
+      50,
+      "A product name must have less or equal than 50 characters",
     ],
-    minlength: [1, "A product name must have more or equal than 1 character"],
+    minlength: [2, "A product name must have more or equal than 2 character"],
   },
 
   price: {
@@ -24,13 +23,22 @@ export const ProductSchema = new mongoose.Schema({
     type: String,
     required: [true, "A product must have a description"],
     trim: true,
-    maxlength: [500, "Product's description must be <= 500 characters"],
-
+    maxlength: [1000, "Product's description must be <= 1000 characters"],
   },
 
   stock: {
     type: Number,
     default: 1,
+  },
+
+  category: {
+    type: String,
+    trim: true,
+  },
+
+  tags: {
+    type: [String],
+    default: [],
   },
 
   images: {
@@ -47,6 +55,9 @@ export interface CreateProductDTO {
   name: string;
   price: number;
   description: string;
+  stock?: number;
+  category?: string;
+  tags?: string[];
   images?: string[];
 }
 

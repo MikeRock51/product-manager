@@ -9,6 +9,8 @@ export interface ProductFilterOptions {
   page?: number;
   limit?: number;
   search?: string;
+  category?: string;
+  tags?: string[];
 }
 
 export class ProductServiceClass {
@@ -39,7 +41,7 @@ export class ProductServiceClass {
   // Updated method to get all products with pagination and filtering
   async getAllProducts(options: ProductFilterOptions = {}) {
     try {
-      const { search, minPrice, maxPrice, minStock, page = 1, limit = 10 } = options;
+      const { search, minPrice, maxPrice, minStock, category, tags, page = 1, limit = 10 } = options;
       const skip = (page - 1) * limit;
 
       // Build filter object
@@ -57,10 +59,21 @@ export class ProductServiceClass {
         filter.stock = { $gte: minStock };
       }
 
+      // Add category filter if provided
+      if (category) {
+        filter.category = category;
+      }
+
+      // Add tags filter if provided
+      if (tags && tags.length > 0) {
+        filter.tags = { $in: tags };
+      }
+
       if (search) {
         filter.$or = [
           { name: { $regex: search, $options: "i" } }, // Case-insensitive search in name
-          { description: { $regex: search, $options: "i" } }, // Case-insensitive search in name
+          { description: { $regex: search, $options: "i" } }, // Case-insensitive search in description
+          { category: { $regex: search, $options: "i" } }, // Case-insensitive search in category
         ]
       }
 

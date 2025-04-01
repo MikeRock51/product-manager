@@ -38,6 +38,8 @@ class ProductControllerClass {
         maxPrice,
         minStock,
         search,
+        category,
+        tags,
       } = req.query;
 
       // Parse query parameters
@@ -48,6 +50,12 @@ class ProductControllerClass {
         maxPrice: parseFloat(maxPrice as string) || undefined,
         minStock: parseInt(minStock as string, 10) || undefined,
         search: search?.toString() || undefined,
+        category: category?.toString() || undefined,
+        tags: tags
+          ? (Array.isArray(tags)
+            ? tags.map(tag => tag.toString())
+            : [tags.toString()])
+          : undefined,
       };
 
       const products = await ProductService.getAllProducts(options);
