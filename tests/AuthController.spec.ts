@@ -187,4 +187,139 @@ describe("AuthController", () => {
       expect(decoded.id).toBe(savedUser?._id.toString());
     });
   });
+
+  describe("POST /auth/login", () => {
+    it("should login successfully and return user with token", async () => {
+      // Create a user first
+      const userData = {
+        email: "logintest@example.com",
+        password: "password123",
+        firstName: "Login",
+        lastName: "Test"
+      };
+
+      await request(app)
+        .post("/auth/register")
+        .send(userData);
+
+      // Try to login with the created user
+      const response = await request(app)
+        .post("/auth/login")
+        .send({
+          email: userData.email,
+          password: userData.password
+        })
+        .expect(200);
+
+      // Check response structure
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toHaveProperty("user");
+      expect(response.body.data).toHaveProperty("token");
+
+      // Check user data in response
+      expect(response.body.data.user.email).toBe(userData.email);
+      expect(response.body.data.user.firstName).toBe(userData.firstName);
+      expect(response.body.data.user.lastName).toBe(userData.lastName);
+      expect(response.body.data.user.role).toBe("user");
+
+      // Password should not be returned
+      expect(response.body.data.user).not.toHaveProperty("password");
+
+      // Verify token is valid
+      const token = response.body.data.token;
+      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as jwtPayload;
+      expect(decoded.email).toBe(userData.email);
+    });
+
+    it("should return 401 if email doesn't exist", async () => {
+      const loginAttempt = {
+        email: "nonexistent@example.com",
+        password: "password123"
+      };
+
+      const response = await request(app)
+        .post("/auth/login")
+        .send(loginAttempt)
+        .expect(401);
+
+      expect(response.body.status).toBe('error');
+      expect(response.body.message).toBe("Invalid email or password");
+    });
+
+    it("should return 401 if password is incorrect", async () => {
+      // Create a user first
+      const userData = {
+        email: "wrongpass@example.com",
+        password: "correctpassword",
+        firstName: "Wrong",
+        lastName: "Password"
+      };
+
+      await request(app)
+        .post("/auth/register")
+        .send(userData);
+
+      // Try to login with incorrect password
+      const response = await request(app)
+        .post("/auth/login")
+        .send({
+          email: userData.email,
+          password: "wrongpassword"
+        })
+        .expect(401);
+
+      expect(response.body.status).toBe('error');
+      expect(response.body.message).toBe("Invalid email or password");
+    });
+
+    it("should return 400 if required fields are missing", async () => {
+      // Missing password
+      const incompleteLogin = {
+        email: "incomplete@example.com"
+      };
+
+      const response = await request(app)
+        .post("/auth/login")
+        .send(incompleteLogin)
+        .expect(400);
+
+      expect(response.body.status).toBe('error');
+    });
+
+    it("should verify the JWT token contains correct user information", async () => {
+      // Create a user first
+      const userData = {
+        email: "jwtlogin@example.com",
+        password: "password123",
+        firstName: "JWT",
+        lastName: "Login"
+      };
+
+      await request(app)
+        .post("/auth/register")
+        .send(userData);
+
+      // Login with the created user
+      const response = await request(app)
+        .post("/auth/login")
+        .send({
+          email: userData.email,
+          password: userData.password
+        })
+        .expect(200);
+
+      const token = response.body.data.token;
+
+      // Decode the token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as jwtPayload;
+
+      expect(decoded.email).toBe(userData.email);
+      expect(decoded.role).toBe("user");
+      expect(decoded).toHaveProperty("id");
+
+      // Verify the ID matches the database user
+      const savedUser = await User.findOne({ email: userData.email });
+      expect(decoded.id).toBe(savedUser?._id.toString());
+    });
+  });
 });
