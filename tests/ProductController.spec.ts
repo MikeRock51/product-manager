@@ -20,7 +20,6 @@ describe("ProductController", () => {
   });
 
   afterAll(async () => {
-    jest.setTimeout(10000); // Increase timeout to 10 seconds
     await dropProducts();
     await closeDatabase();
   });
@@ -152,11 +151,130 @@ describe("ProductController", () => {
       expect(response.body.data).toHaveLength(2);
 
       response = await request(app)
-      .get("/products?page=2&limit=2")
-      .expect(200);
+        .get("/products?page=2&limit=2")
+        .expect(200);
 
       expect(response.body.data).toHaveLength(1);
       expect(response.body.data[0]).toHaveProperty("name", "Product 3");
+    });
+  });
+
+  describe("GET /products with filters", () => {
+    beforeEach(async () => {
+      // Create test products with different price points and stock levels
+      await ProductModel.create([
+        {
+          name: "Budget Product",
+          price: 25,
+          description: "A low-cost product",
+          stock: 5,
+        },
+        {
+          name: "Mid-range Product",
+          price: 100,
+          description: "A mid-range product",
+          stock: 15,
+        },
+        {
+          name: "Premium Product",
+          price: 500,
+          description: "A high-end product",
+          stock: 3,
+        },
+        {
+          name: "Luxury Product",
+          price: 1000,
+          description: "A luxury product",
+          stock: 0,
+        },
+      ]);
+    });
+
+    it("should filter products by minimum price", async () => {
+      const response = await request(app)
+        .get("/products?minPrice=100")
+        .expect(200);
+
+      expect(response.body.data).toHaveLength(3);
+      expect(response.body.data.map((p: any) => p.name)).toContain("Mid-range Product");
+      expect(response.body.data.map((p: any) => p.name)).toContain("Premium Product");
+      expect(response.body.data.map((p: any) => p.name)).toContain("Luxury Product");
+      expect(response.body.data.map((p: any) => p.name)).not.toContain("Budget Product");
+
+      response.body.data.forEach((product: any) => {
+        expect(product.price).toBeGreaterThanOrEqual(100);
+      });
+    });
+
+    it("should filter products by maximum price", async () => {
+      const response = await request(app)
+        .get("/products?maxPrice=100")
+        .expect(200);
+
+      expect(response.body.data).toHaveLength(2);
+      expect(response.body.data.map((p: any) => p.name)).toContain("Budget Product");
+      expect(response.body.data.map((p: any) => p.name)).toContain("Mid-range Product");
+
+      response.body.data.forEach((product: any) => {
+        expect(product.price).toBeLessThanOrEqual(100);
+      });
+    });
+
+    it("should filter products by price range", async () => {
+      const response = await request(app)
+        .get("/products?minPrice=50&maxPrice=600")
+        .expect(200);
+
+      expect(response.body.data).toHaveLength(2);
+      expect(response.body.data.map((p: any) => p.name)).toContain("Mid-range Product");
+      expect(response.body.data.map((p: any) => p.name)).toContain("Premium Product");
+
+      response.body.data.forEach((product: any) => {
+        expect(product.price).toBeGreaterThanOrEqual(50);
+        expect(product.price).toBeLessThanOrEqual(600);
+      });
+    });
+
+    it("should filter products by minimum stock", async () => {
+      const response = await request(app)
+        .get("/products?minStock=5")
+        .expect(200);
+
+      expect(response.body.data).toHaveLength(2);
+      expect(response.body.data.map((p: any) => p.name)).toContain("Budget Product");
+      expect(response.body.data.map((p: any) => p.name)).toContain("Mid-range Product");
+
+      response.body.data.forEach((product: any) => {
+        expect(product.stock).toBeGreaterThanOrEqual(5);
+      });
+    });
+
+    it("should filter products by minimum stock and price range", async () => {
+      const response = await request(app)
+        .get("/products?minStock=5&minPrice=50&maxPrice=200")
+        .expect(200);
+
+      expect(response.body.data).toHaveLength(1);
+      expect(response.body.data[0].name).toBe("Mid-range Product");
+      expect(response.body.data[0].price).toBe(100);
+      expect(response.body.data[0].stock).toBe(15);
+    });
+
+    it("should return empty array when no products match filters", async () => {
+      const response = await request(app)
+        .get("/products?minPrice=2000")
+        .expect(200);
+
+      expect(response.body.data).toHaveLength(0);
+    });
+
+    it("should handle invalid filter values gracefully", async () => {
+      const response = await request(app)
+        .get("/products?minPrice=invalid&maxPrice=alsoinvalid")
+        .expect(200);
+
+      // Should ignore invalid filters and return all products
+      expect(response.body.data).toHaveLength(4);
     });
   });
 

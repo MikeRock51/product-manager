@@ -43,8 +43,6 @@ export const ProductSchema = new mongoose.Schema({
   },
 });
 
-ProductSchema.index({ name: 1 }, { unique: true });
-
 export interface CreateProductDTO {
   name: string;
   price: number;

@@ -31,11 +31,24 @@ class ProductControllerClass {
 
   async getAllProducts(req: Request, res: Response, next: NextFunction) {
     try {
-      const { page = 1, limit = 10 } = req.query;
-      const pageNumber = parseInt(page as string, 10);
-      const limitNumber = parseInt(limit as string, 10);
+      const {
+        page = 1,
+        limit = 10,
+        minPrice,
+        maxPrice,
+        minStock
+      } = req.query;
 
-      const products = await ProductService.getAllProducts(pageNumber, limitNumber);
+      // Parse query parameters
+      const options = {
+        page: parseInt(page as string, 10),
+        limit: parseInt(limit as string, 10),
+        minPrice: parseFloat(minPrice as string) || undefined,
+        maxPrice: parseFloat(maxPrice as string) || undefined,
+        minStock: parseInt(minStock as string, 10) || undefined
+      };
+
+      const products = await ProductService.getAllProducts(options);
 
       res.status(200).json({
         status: "success",

@@ -2,6 +2,14 @@ import { ProductModel, CreateProductDTO } from "../models/Product";
 import { deleteFileFromS3, uploadFileToS3 } from "../config/upload";
 import { AppError } from "../middleware/errorHandler";
 
+export interface ProductFilterOptions {
+  minPrice?: number;
+  maxPrice?: number;
+  minStock?: number;
+  page?: number;
+  limit?: number;
+}
+
 export class ProductServiceClass {
   async createProduct(
     productData: CreateProductDTO,
@@ -27,11 +35,28 @@ export class ProductServiceClass {
     }
   }
 
-  // Method to get all products with pagination
-  async getAllProducts(page: number = 1, limit: number = 10) {
+  // Updated method to get all products with pagination and filtering
+  async getAllProducts(options: ProductFilterOptions = {}) {
     try {
+      const { minPrice, maxPrice, minStock, page = 1, limit = 10 } = options;
       const skip = (page - 1) * limit;
-      const products = await ProductModel.find()
+
+      // Build filter object
+      const filter: any = {};
+
+      // Add price range filters if provided
+      if (minPrice !== undefined || maxPrice !== undefined) {
+        filter.price = {};
+        if (minPrice !== undefined) filter.price.$gte = minPrice;
+        if (maxPrice !== undefined) filter.price.$lte = maxPrice;
+      }
+
+      // Add stock filter if provided
+      if (minStock !== undefined) {
+        filter.stock = { $gte: minStock };
+      }
+
+      const products = await ProductModel.find(filter)
         .sort({ createdAt: -1, name: 1 })
         .skip(skip)
         .limit(limit);
