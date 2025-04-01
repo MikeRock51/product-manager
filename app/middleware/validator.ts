@@ -41,6 +41,7 @@ export const productValidationRules = {
       .optional()
       .trim()
       .escape()
+      .toLowerCase()
       .isLength({ min: 2, max: 50 }).withMessage('Category must be between 2 and 50 characters'),
 
     body('tags')
@@ -48,7 +49,7 @@ export const productValidationRules = {
       .isArray().withMessage('Tags must be an array')
       .customSanitizer(value => {
         if (Array.isArray(value)) {
-          return value.map(tag => require('validator').escape(String(tag).trim()));
+          return value.map(tag => require('validator').escape(String(tag).trim().toLowerCase()));
         }
         return value;
       }),
@@ -88,6 +89,7 @@ export const productValidationRules = {
       .optional()
       .trim()
       .escape()
+      .toLowerCase()
       .isLength({ min: 2, max: 50 }).withMessage('Category must be between 2 and 50 characters'),
 
     body('tags')
@@ -95,7 +97,7 @@ export const productValidationRules = {
       .isArray().withMessage('Tags must be an array')
       .customSanitizer(value => {
         if (Array.isArray(value)) {
-          return value.map(tag => require('validator').escape(String(tag).trim()));
+          return value.map(tag => require('validator').escape(String(tag).trim().toLowerCase()));
         }
         return value;
       }),
@@ -146,15 +148,16 @@ export const productValidationRules = {
     query('category')
       .optional()
       .trim()
-      .escape(),
+      .escape()
+      .toLowerCase(),
 
     query('tags')
       .optional()
       .customSanitizer(value => {
         if (Array.isArray(value)) {
-          return value.map(tag => require('validator').escape(String(tag).trim()));
+          return value.map(tag => require('validator').escape(String(tag).trim().toLowerCase()));
         } else if (value) {
-          return [require('validator').escape(String(value).trim())];
+          return [require('validator').escape(String(value).trim().toLowerCase())];
         }
         return value;
       }),

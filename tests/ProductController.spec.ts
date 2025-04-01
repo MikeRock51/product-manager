@@ -40,6 +40,8 @@ describe("ProductController", () => {
         .send(newProduct)
         .expect(201);
 
+      newProduct.category = newProduct.category.toLowerCase();
+
       expect(response.body.data.name).toBe(newProduct.name);
       expect(response.body.data.price).toBe(newProduct.price);
       expect(response.body.data.description).toBe(newProduct.description);
@@ -367,7 +369,7 @@ describe("ProductController", () => {
           price: 999,
           description: "Apple smartphone",
           stock: 10,
-          category: "Smartphones",
+          category: "smartphones",
           tags: ["apple", "ios", "mobile"],
         },
         {
@@ -375,7 +377,7 @@ describe("ProductController", () => {
           price: 799,
           description: "Samsung smartphone",
           stock: 15,
-          category: "Smartphones",
+          category: "smartphones",
           tags: ["samsung", "android", "mobile"],
         },
         {
@@ -383,7 +385,7 @@ describe("ProductController", () => {
           price: 699,
           description: "Google smartphone",
           stock: 8,
-          category: "Smartphones",
+          category: "smartphones",
           tags: ["google", "android", "mobile"],
         },
         {
@@ -391,7 +393,7 @@ describe("ProductController", () => {
           price: 1099,
           description: "Apple tablet",
           stock: 5,
-          category: "Tablets",
+          category: "tablets",
           tags: ["apple", "ios", "tablet"],
         },
         {
@@ -399,20 +401,20 @@ describe("ProductController", () => {
           price: 1999,
           description: "Apple laptop",
           stock: 7,
-          category: "Laptops",
-          tags: ["apple", "macOS", "laptop"],
+          category: "laptops",
+          tags: ["apple", "macos", "laptop"],
         },
       ]);
     });
 
     it("should filter products by category", async () => {
       const response = await request(app)
-        .get("/products?category=Smartphones")
+        .get("/products?category=smartphones")
         .expect(200);
 
       expect(response.body.data).toHaveLength(3);
       response.body.data.forEach((product: any) => {
-        expect(product.category).toBe("Smartphones");
+        expect(product.category).toBe("smartphones");
       });
     });
 
@@ -440,24 +442,24 @@ describe("ProductController", () => {
 
     it("should combine category and tags filters", async () => {
       const response = await request(app)
-        .get("/products?category=Smartphones&tags=android")
+        .get("/products?category=smartphones&tags=android")
         .expect(200);
 
       expect(response.body.data).toHaveLength(2);
       response.body.data.forEach((product: any) => {
-        expect(product.category).toBe("Smartphones");
+        expect(product.category).toBe("smartphones");
         expect(product.tags).toContain("android");
       });
     });
 
     it("should combine category and price filters", async () => {
       const response = await request(app)
-        .get("/products?category=Smartphones&minPrice=800")
+        .get("/products?category=smartphones&minPrice=800")
         .expect(200);
 
       expect(response.body.data).toHaveLength(1);
       expect(response.body.data[0].name).toBe("iPhone 13 Pro");
-      expect(response.body.data[0].category).toBe("Smartphones");
+      expect(response.body.data[0].category).toBe("smartphones");
       expect(response.body.data[0].price).toBe(999);
     });
   });
@@ -510,6 +512,8 @@ describe("ProductController", () => {
         .put(`/products/${product._id}`)
         .send(updatedProductData)
         .expect(200);
+
+      updatedProductData.category = updatedProductData.category.toLowerCase();
 
       expect(response.body.data).toHaveProperty("_id", product._id.toString());
       expect(response.body.data.category).toBe(updatedProductData.category);
