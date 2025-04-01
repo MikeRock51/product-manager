@@ -1,10 +1,8 @@
 import jwt from "jsonwebtoken";
 import User, { IUser } from "../models/User";
 import { AppError } from "../middleware/errorHandler";
-
-// Secret key for JWT signing - should be in environment variables in production
-const JWT_SECRET: jwt.Secret = process.env.JWT_SECRET || "your-secret-key";
-const JWT_EXPIRES_IN: string | number = process.env.JWT_EXPIRES_IN || "1d";
+import { jwtPayload } from "../interfaces/jwtPayload";
+import 'dotenv/config';
 
 export interface RegisterUserInput {
   email: string;
@@ -43,9 +41,15 @@ class AuthService {
 
     // Create new user
     const user = await User.create(userData);
+    const payload: jwtPayload = {
+      id: user._id!.toString(),
+      email: user.email,
+      firstName: user.firstName,
+      role: user.role,
+    };
 
     // Generate JWT token
-    // const token = this.generateToken(user);
+    const token = this.generateToken(payload);
 
     return {
       user: {
@@ -55,7 +59,7 @@ class AuthService {
         lastName: user.lastName,
         role: user.role,
       },
-      token: "",
+      token,
     };
   }
 
@@ -95,19 +99,15 @@ class AuthService {
   /**
    * Generate JWT token for authenticated user
    */
-  // private generateToken(user: IUser): string {
-  //   return jwt.sign(
-  //     {
-  //       id: user._id,
-  //       email: user.email,
-  //       role: user.role,
-  //     },
-  //     JWT_SECRET,
-  //     {
-  //       expiresIn: JWT_EXPIRES_IN,
-  //     }
-  //   );
-  // }
+  private generateToken(user: jwtPayload): string {
+    return jwt.sign(
+      user,
+      process.env.JWT_SECRET!,
+      {
+        expiresIn: '1d',
+      }
+    );
+  }
 
   // /**
   //  * Verify token and return user data

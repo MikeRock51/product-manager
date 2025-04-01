@@ -7,7 +7,7 @@ class AuthControllerClass {
    */
   async register(req: Request, res: Response, next: NextFunction) {
     try {
-      const { email, password, firstName, lastName, role } = req.body;
+      const { email, password, firstName, lastName } = req.body;
 
       const result = await AuthService.register({
         email,
