@@ -2,6 +2,11 @@
 
 A comprehensive RESTful API for managing products with authentication, authorization, and media upload capabilities.
 
+## URLs
+
+- **Live API**: [Postman Documentation](https://product-manager-api.onrender.com)
+- **API Documentation**: [Postman Documentation](http://35.225.247.91)
+
 ## Table of Contents
 - [Setup and Installation](#setup-and-installation)
 - [Authentication](#authentication)
