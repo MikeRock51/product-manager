@@ -1,6 +1,21 @@
-const mongoose = require("mongoose");
+import mongoose, { ObjectId } from "mongoose";
 
-export const ProductSchema = new mongoose.Schema(
+
+export interface IProduct {
+  _id?: ObjectId;
+  name: string;
+  price: number;
+  description: string;
+  stock: number;
+  category?: string;
+  tags: string[];
+  images: string[];
+  vendor: ObjectId;
+  createdAt: number;
+  updatedAt: number;
+}
+
+const ProductSchema = new mongoose.Schema<IProduct>(
   {
     name: {
       type: String,
@@ -74,5 +89,14 @@ export interface CreateProductDTO {
   tags?: string[];
   images?: string[];
 }
+
+ProductSchema.pre(/^find/, function(next) {
+  (this as mongoose.Query<any, any>).populate({
+    path: 'vendor',
+    select: 'firstName lastName email',
+  });
+  next();
+});
+
 
 export const ProductModel = mongoose.model("Product", ProductSchema);

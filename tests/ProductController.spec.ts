@@ -95,7 +95,7 @@ describe("ProductController", () => {
       expect(savedProduct?.name).toBe(newProduct.name);
       expect(savedProduct?.category).toBe(newProduct.category);
       expect(savedProduct?.tags).toEqual(newProduct.tags);
-      expect(savedProduct?.vendor.toString()).toBe(testUser.id);
+      expect((savedProduct?.vendor as any)._id.toString()).toBe(testUser.id);
     });
 
     it("should return 400 if required fields are missing", async () => {
@@ -151,7 +151,7 @@ describe("ProductController", () => {
       expect(response.body.data.price).toBe(product.price);
       expect(response.body.data.description).toBe(product.description);
       expect(response.body.data.stock).toBe(product.stock);
-      expect(response.body.data.vendor).toBe(testUser.id);
+      expect(response.body.data.vendor._id).toBe(testUser.id);
     });
 
     it("should return 404 if product is not found", async () => {
@@ -192,8 +192,8 @@ describe("ProductController", () => {
       expect(response.body.data).toHaveLength(2);
       expect(response.body.data[0]).toHaveProperty("name", "Product 1");
       expect(response.body.data[1]).toHaveProperty("name", "Product 2");
-      expect(response.body.data[0].vendor).toBe(testUser.id);
-      expect(response.body.data[1].vendor).toBe(testUser.id);
+      expect(response.body.data[0].vendor._id).toBe(testUser.id);
+      expect(response.body.data[1].vendor._id).toBe(testUser.id);
     });
   });
 
@@ -569,13 +569,13 @@ describe("ProductController", () => {
       expect(response.body.data).toHaveProperty("_id", product._id.toString());
       expect(response.body.data.name).toBe(updatedProductData.name);
       expect(response.body.data.price).toBe(updatedProductData.price);
-      expect(response.body.data.vendor).toBe(testUser.id);
+      expect(response.body.data.vendor._id).toBe(testUser.id);
 
       const updatedProduct = await ProductModel.findById(product._id);
       expect(updatedProduct).not.toBeNull();
       expect(updatedProduct?.name).toBe(updatedProductData.name);
       expect(updatedProduct?.price).toBe(updatedProductData.price);
-      expect(updatedProduct?.vendor.toString()).toBe(testUser.id);
+      expect((updatedProduct?.vendor as any)?._id.toString()).toBe(testUser.id);
     });
 
     it("should update a product's category and tags successfully", async () => {
