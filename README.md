@@ -1,6 +1,6 @@
 # Product Manager API
 
-A comprehensive RESTful API for managing products with authentication, authorization, and media upload capabilities.
+A RESTful API for managing products with authentication, authorization, and media upload capabilities.
 
 ## URLs
 
@@ -9,6 +9,7 @@ A comprehensive RESTful API for managing products with authentication, authoriza
 
 ## Table of Contents
 - [Setup and Installation](#setup-and-installation)
+- [Running Tests](#running-tests)
 - [Authentication](#authentication)
 - [API Endpoints](#api-endpoints)
   - [Authentication](#authentication-endpoints)
@@ -48,6 +49,26 @@ yarn start
 # For development with hot-reloading
 yarn dev
 ```
+
+## Running Tests
+
+The project uses Jest for testing. To run the tests:
+
+```bash
+# Run all tests
+yarn test
+
+# Run specific test file
+yarn test tests/ProductController.spec.ts
+
+# Run tests in watch mode (for development)
+yarn test --watch
+```
+
+The tests cover various aspects of the application including:
+- Authentication and authorization
+- Product management endpoints
+- Rate limiting functionality
 
 ## Authentication
 
