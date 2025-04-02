@@ -6,11 +6,15 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DB_URI=${DB_URI:-mongodb://mongodb:27017/product-manager}
-      - TEST_DB_URI=${TEST_DB_URI:-mongodb://mongodb:27017/product-manager-test}
-      - JWT_SECRET=${JWT_SECRET:-your_jwt_secret}
+      - NODE_ENV=${NODE_ENV}
+      - DB_URI=${DB_URI}
+      - TEST_DB_URI=${TEST_DB_URI}
+      - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRATION=${JWT_EXPIRATION:-1d}
+      - AWS_BUCKET_REGION=${AWS_BUCKET_REGION}
+      - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     volumes:
       - ./:/app
       - /app/node_modules

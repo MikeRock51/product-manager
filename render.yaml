@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: product-manager
+    env: docker
+    region: ohio
+    plan: starter
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_URI
+        fromDatabase:
+          name: product-manager-db
+          property: connectionString
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 1d
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_REGION
+        value: us-east-1
+      - key: AWS_BUCKET_NAME
+        value: mainstack-product-manager
+
+databases:
+  - name: product-manager-db
+    plan: starter
+    type: mongodb
+    

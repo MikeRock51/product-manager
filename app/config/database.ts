@@ -11,6 +11,7 @@ export async function initializeDatabase() {
     console.log(`Connected to ${environment} database successfully! ✅✅✅`);
   } catch (err) {
     console.error("❌❌❌ Unable to connect to the database:", err);
+    console.log(`DB URI: ${DB_URI}`);
     process.exit(1);
   }
 }
