@@ -1,0 +1,17 @@
+[Unit]
+Description=Product Manager Daemon Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/bash -c 'cd /home/$USER/product-manager && docker-compose up'
+Restart=always
+RestartSec=5
+User=ubuntu
+WorkingDirectory=/home/$USER/product-manager
+StandardOutput=append:/var/log/product-manager.log
+StandardError=append:/var/log/product-manager-error.log
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
