@@ -1,11 +1,11 @@
 # Product Manager API
 
-A RESTful API for managing products with authentication, authorization, and media upload capabilities.
+The Product Manager API provides RESTful endpoints for managing products with full authentication, authorization, and media upload capabilities. The API allows users to create, retrieve, update, and delete products, with different permission levels based on user roles (regular user or admin).
 
 ## URLs
 
-- **Live API**: [Postman Documentation](https://product-manager-api.onrender.com)
-- **API Documentation**: [Postman Documentation](http://35.225.247.91)
+- **Live API**: [Live API](http://35.225.247.91)
+- **API Documentation**: [Postman Documentation](https://documenter.getpostman.com/view/30168355/2sB2cSgP2Q)
 
 ## Table of Contents
 - [Setup and Installation](#setup-and-installation)
